@@ -23,6 +23,12 @@ class Setup407:
     n_ordinary = 1.5
     n_extra = 1.3
 
+class Polaroid:
+    def __init__(self, angle: float = 0):
+        self.angle = angle
+
+
+
 class Scatter:
 
     def distribution(self, phi, theta):
@@ -109,6 +115,8 @@ class Lab407Widget(QWidget):
         ch_box.stateChanged.connect(change_state)
         layout.addWidget(ch_box)
 
+    def initPolaroid(self):
+        polaroid = Polaroid()
 
     def initMPLWidget(self, layout):
         self.canvas = FigureCanvas(Figure(figsize=(10, 10)))
