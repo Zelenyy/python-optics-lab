@@ -1,12 +1,53 @@
+from dataclasses import dataclass
+from typing import Type
+
 import numpy as np
 import matplotlib.pyplot as plt
+from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton
+from PyQt5 import QtWidgets
 from optics.work_405_window import Work405Window
 from optics.optics_item import Diaphragm
+from optics.work_407_window import Lab407Window
 
 
-def init():
-    window = Work405Window()
-    window.show()
+@dataclass
+class Launcher:
+    btn_name : str
+    window_factory: Type
+    window : QWidget = None
+
+
+    def launch(self):
+        if self.window is None:
+            self.window = self.window_factory()
+        self.window.show()
+
+class LabsWigget(QtWidgets.QWidget):
+
+    def __init__(self):
+        super().__init__()
+        vbox = QVBoxLayout()
+
+        label = QLabel("Выберите лабораторную работу")
+
+        labs = [
+            Launcher("407", Lab407Window)
+        ]
+
+        vbox.addWidget(label)
+
+        for lab in labs:
+            btn = QPushButton(lab.btn_name)
+            btn.clicked.connect(lab.launch)
+
+class LabsWindow(QMainWindow):
+    def __init__(self, args):
+        super().__init__()
+        self.central = LabsWigget()
+        self.setCentralWidget(self.central)
+        self.setMinimumSize(640, 480)
+
+
 
 
 def main():
