@@ -17,9 +17,9 @@ class Launcher:
     window : QWidget = None
 
 
-    def launch(self):
+    def launch(self, push):
         if self.window is None:
-            self.window = self.window_factory()
+            self.window = self.window_factory(self.btn_name)
         self.window.show()
 
 class LabsWigget(QtWidgets.QWidget):
@@ -31,14 +31,19 @@ class LabsWigget(QtWidgets.QWidget):
         label = QLabel("Выберите лабораторную работу")
 
         labs = [
-            Launcher("407", Lab407Window)
+            Launcher("407: Эффект Поккельса", Lab407Window)
         ]
 
         vbox.addWidget(label)
 
+
+
         for lab in labs:
             btn = QPushButton(lab.btn_name)
-            btn.clicked.connect(lab.launch)
+            # btn.clicked.connect(lab.launch)
+            btn.clicked.connect(lambda x: lab.launch(x))
+            vbox.addWidget(btn)
+        self.setLayout(vbox)
 
 class LabsWindow(QMainWindow):
     def __init__(self, args):

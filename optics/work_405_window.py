@@ -2,6 +2,7 @@ import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QImage, QPixmap
 
+from optics.base_window import WithImage
 from optics.optics_item import Lens, Diaphragm
 
 
@@ -78,7 +79,7 @@ class ImageCalculator:
         return self.oned_to_2d(spectrum)
 
 
-class Work405Window(QtWidgets.QWidget):
+class Work405Window(QtWidgets.QWidget, WithImage):
 
     def init_diaphragm(self, form):
         diaphragm = Diaphragm()
@@ -190,12 +191,10 @@ class Work405Window(QtWidgets.QWidget):
         self.setLayout(self.hbox)
         self.init_controls()
 
-    def updateImage(self):
-        self.image = self.image_calculator.calculate()
-        self.image_label.setPixmap(QPixmap.fromImage(self.image))
 
     # def randomFill(self):
     #     rnd = np.random.randint(0,256)
     #     color = QColor(rnd)
     #     self.image.fill(color)
     #     self.updateImage()
+
