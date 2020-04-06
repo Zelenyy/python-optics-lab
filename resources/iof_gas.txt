@@ -1,0 +1,6 @@
+Vacuum	1
+Helium	1.000036	
+Hydrogen 1.000132
+Air_1	1.000277
+Air_2	1.000293
+Carbon_Dioxide	1.001

@@ -1,3 +1,4 @@
+import math
 import math as m
 
 import numpy as np
@@ -38,3 +39,16 @@ class Diaphragm:
         k = 2 * m.pi / lambda_light
         u = k * np.sin(theta)
         return self.fourier_spectrum(u)
+
+
+
+def fresnel_coefficients_s_r(alpha, beta):
+    alpha = math.radians(alpha)
+    beta = math.radians(beta)
+    return (math.sin(alpha - beta)**2)/(math.sin(alpha + beta)**2)
+
+
+def fresnel_coefficients_p_r(alpha, beta):
+    alpha = math.radians(alpha)
+    beta = math.radians(beta)
+    return (math.tan(alpha - beta)**2)/(math.tan(alpha + beta)**2)
