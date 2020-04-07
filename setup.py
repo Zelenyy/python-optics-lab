@@ -13,7 +13,7 @@ MATPLOTLIB_MIN_VERSION = '3.1.1'
 # PYTABLES_MIN_VERSION = '3.5.1'
 
 setuptools.setup(
-    name="mipt-optics",
+    name="mipt-npm-optics",
     version="0.0.1",
     author="Mikhail Zelenyi",
     author_email="mihail.zelenyy@phystech.edu",
@@ -23,7 +23,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords="optics",
-    packages=["optics"],
+    packages=["main", "optics"],
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -38,7 +38,8 @@ setuptools.setup(
         'numpy>={0}'.format(NUMPY_MIN_VERSION),
         'scipy>={0}'.format(SCIPY_MIN_VERSION),
         'matplotlib>={0}'.format(MATPLOTLIB_MIN_VERSION),
-        "pyqt>=".format(PYQT_MIN_VERSION)
+        "pyqt>=".format(PYQT_MIN_VERSION),
+        "appdirs"
         # 'tables>={0}'.format(PYTABLES_MIN_VERSION),
 
     ]

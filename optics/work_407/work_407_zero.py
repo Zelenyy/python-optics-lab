@@ -7,6 +7,14 @@ from scipy.stats import multivariate_normal
 
 from optics.optics_item import IOFTable, fresnel_coefficients_s_r, fresnel_coefficients_p_r
 
+from matplotlib.backends.qt_compat import is_pyqt5
+if is_pyqt5():
+    from matplotlib.backends.backend_qt5agg import (
+        FigureCanvas)
+
+else:
+    from matplotlib.backends.backend_qt4agg import (
+        FigureCanvas)
 
 class AnalyzerZero(QDialog):
     def __init__(self, setup):
@@ -68,11 +76,9 @@ class AnalyzerZero(QDialog):
         beta = np.arcsin(self.n12 * np.sin(angle))
         Rs = np.vectorize(fresnel_coefficients_s_r)(angle, beta)
         Rp = np.vectorize(fresnel_coefficients_p_r)(angle, beta)
-        print(Rs, Rp)
         Rs = Rs.max()
         Rp = Rp.max()
         self.max_int = math.log(1 + max([Rs, Rp]))
-        # print("Max int" , self.max_int)
 
     def calculate(self, angle, polaroid_angle):
         angle_r = math.radians(angle)
@@ -88,7 +94,6 @@ class AnalyzerZero(QDialog):
         # ampl /= ampl.max()
         ampl = np.zeros((10, 10), "d")
         ampl[3:7, 3:7] = 1.0
-        # print(Rs, Rp, beta + angle_r, coeff, np.log(1+coeff))
         return np.log(1 + ampl * coeff)
 
     def initMPLWidget(self, layout):

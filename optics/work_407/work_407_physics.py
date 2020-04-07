@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 from optics.base_window import ImageCalculator
+from optics.work_407.electric_field import ElectricField
 from optics.work_407.work_407_setup import Setup407
 from optics.optics_item import Scatter, Polaroid
 
@@ -13,6 +14,8 @@ class PokkelsIC(ImageCalculator):
     polaroid: Polaroid = None
     crystal = None
     diod = None
+    field : ElectricField = None
+
 
     def __init__(self, setup: Setup407):
         self.setup = setup
@@ -83,36 +86,84 @@ class PokkelsIC(ImageCalculator):
         else:
             return self.calculate_osc()
 
-    def calculate_osc(self):
-        pass
-
-    def calculate_view(self) -> np.ndarray:
-        ampl = self.scatter.distribution(self.phi, self.theta)
-        if self.crystal is not None:
+    def calculate_osc(self)-> np.ndarray:
+        ampl = 1.0
+        u = self.field.value()
+        if self.polaroid is not None:
+            ul2 = self.setup.half_lambda_voltage
+            phases = np.pi * u / (2 * ul2)
             laser_angle = math.radians(self.setup.laser_angle)
             Ex = ampl * np.cos(laser_angle)
             Ey = ampl * np.sin(laser_angle)
+            sqrt2 = 2 ** 0.5
+            E1 = (-Ex + Ey) / sqrt2
+            E2 = (Ex + Ey) / sqrt2
 
-            ampl_o = (Ex * np.sin(self.phi) + Ey * np.cos(self.phi)) * np.cos(self.theta)
-            ampl_e = (Ex * np.cos(self.phi) + Ey * np.sin(self.phi)) * np.cos(self.theta)
-
-            Exo, Eyo, phases_o = self.wave_ordinary(ampl_o, self.theta, self.theta_out, self.phi)
-            Exe, Eye, phases_e, Eze = self.wave_extraordinary(ampl_e, self.theta, self.theta_out, self.phi)
-
-            Ex = Exo * np.sin(phases_o) + Exe * np.sin(phases_e)
-            Ey = Eyo * np.sin(phases_o) + Eye * np.sin(phases_e)
-            if self.polaroid is None:
-                ampl = ampl_e ** 2 + ampl_o ** 2
-                return self.repeat4(ampl)
             permitted_angle = math.radians(self.polaroid.angle())
-            Ex = Ex * np.cos(permitted_angle)
-            Ey = Ey * np.sin(permitted_angle)
+            E1x = E1 * np.cos(3 * np.pi / 4 - permitted_angle)
+            E1y = E1 * np.sin(3 * np.pi / 4 - permitted_angle)
+            E2x = E2 * np.cos(np.pi / 4 - permitted_angle)
+            E2y = E2 * np.sin(np.pi / 4 - permitted_angle)
+            Ex = E1x + E2x * np.sin(phases)
+            Ey = E1y + E2y * np.sin(phases)
             ampl = Ex ** 2 + Ey ** 2
-            return self.repeat4(ampl)
+            return ampl
         else:
+            return np.ones(u.size)
+
+
+    def calculate_view(self) -> np.ndarray:
+        ampl = self.scatter.distribution(self.phi, self.theta)
+        if self.field is None:
+            if self.crystal is not None:
+                laser_angle = math.radians(self.setup.laser_angle)
+                Ex = ampl * np.cos(laser_angle)
+                Ey = ampl * np.sin(laser_angle)
+
+                ampl_o = (Ex * np.sin(self.phi) + Ey * np.cos(self.phi)) * np.cos(self.theta)
+                ampl_e = (Ex * np.cos(self.phi) + Ey * np.sin(self.phi)) * np.cos(self.theta)
+
+                Exo, Eyo, phases_o = self.wave_ordinary(ampl_o, self.theta, self.theta_out, self.phi)
+                Exe, Eye, phases_e, Eze = self.wave_extraordinary(ampl_e, self.theta, self.theta_out, self.phi)
+
+                Ex = Exo * np.sin(phases_o) + Exe * np.sin(phases_e)
+                Ey = Eyo * np.sin(phases_o) + Eye * np.sin(phases_e)
+                if self.polaroid is None:
+                    ampl = ampl_e ** 2 + ampl_o ** 2
+                    return self.repeat4(ampl)
+                permitted_angle = math.radians(self.polaroid.angle())
+                Ex = Ex * np.cos(permitted_angle)
+                Ey = Ey * np.sin(permitted_angle)
+                ampl = Ex ** 2 + Ey ** 2
+                return self.repeat4(ampl)
+            else:
+                if self.polaroid is not None:
+                    angle = self.setup.laser_angle - self.polaroid.angle()
+                    ampl *= (math.cos(math.radians(angle)) ** 2)
+                return self.repeat4(ampl)
+        else:
+            u = self.field.value()
+            ul2 = self.setup.half_lambda_voltage
+            phases = np.pi*u/(2*ul2)
+            laser_angle = math.radians(self.setup.laser_angle)
+            Ex = ampl * np.cos(laser_angle)
+            Ey = ampl * np.sin(laser_angle)
+            sqrt2 = 2**0.5
+            # E1 = (Ex*np.cos(self.phi-np.pi/4) + Ey*np.sin(self.phi-np.pi/4))*np.cos(self.theta)
+            # E2 = (Ex*np.cos(self.phi+np.pi/4) + Ey*np.sin(self.phi+np.pi/4))*np.cos(self.theta)
+            E1 = (-Ex + Ey)/sqrt2
+            E2 = (Ex + Ey)/sqrt2
             if self.polaroid is not None:
-                angle = self.setup.laser_angle - self.polaroid.angle()
-                ampl *= (math.cos(math.radians(angle)) ** 2)
+                permitted_angle = math.radians(self.polaroid.angle())
+                E1x = E1*np.cos(3*np.pi/4 - permitted_angle)
+                E1y = E1*np.sin(3*np.pi/4 - permitted_angle)
+                E2x = E2*np.cos(np.pi/4 - permitted_angle)
+                E2y = E2*np.sin(np.pi/4 -permitted_angle)
+                Ex = E1x + E2x*np.sin(phases)
+                Ey = E1y + E2y*np.sin(phases)
+                ampl = Ex**2 + Ey**2
+                return self.repeat4(ampl)
+
             return self.repeat4(ampl)
 
     def repeat4(self, ampl):

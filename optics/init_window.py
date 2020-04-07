@@ -43,6 +43,7 @@ class LabsWigget(QtWidgets.QWidget):
             btn.clicked.connect(lambda x: lab.launch(x))
             vbox.addWidget(btn)
         self.setLayout(vbox)
+        vbox.addStretch()
 
 class LabsWindow(QMainWindow):
     def __init__(self, args):
@@ -75,3 +76,5 @@ def main():
     # plt.plot(x, ampl)
     plt.show()
     plt.show()
+
+

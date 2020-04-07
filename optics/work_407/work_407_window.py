@@ -1,11 +1,14 @@
 import numpy as np
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLayout, QGroupBox, QCheckBox, QSpinBox, \
-    QFormLayout, QPushButton
+    QFormLayout, QPushButton, QDoubleSpinBox, QLabel
 from matplotlib.backends.qt_compat import is_pyqt5
 from matplotlib.figure import Figure
+from matplotlib.ticker import MultipleLocator
 from scipy.stats import multivariate_normal
 
+from optics.load_setup import load_setup
 from optics.optics_item import Scatter, Polaroid
+from optics.work_407.electric_field import ElectricField, EFState
 from optics.work_407.work_407_physics import PokkelsIC
 from optics.work_407.work_407_setup import Setup407
 from optics.work_407.work_407_zero import AnalyzerZero
@@ -47,30 +50,86 @@ class Lab407Widget(QWidget):
         super().__init__()
         self.hbox = QHBoxLayout()
         self.vbox = QVBoxLayout()
-        self.hbox.addLayout(self.vbox)
+
         self.setLayout(self.hbox)
-        self.setup = Setup407()
+        # self.setup = Setup407()
+        self.setup = load_setup(Setup407)
+        self.initSetup(self.vbox)
         self.image_calculator = PokkelsIC(self.setup)
         self.initMPLWidget(self.hbox)
         self.initCrystal(self.vbox)
         self.initScatter(self.vbox)
         self.initPolaroid(self.vbox)
+        self.initField(self.vbox)
+        self.initDiod(self.vbox)
+        self.hbox.addLayout(self.vbox)
+        self.vbox.addStretch()
         self.updateCanvas = self.updateCanvasView
         self.updateCanvas()
+
+    def initSetup(self, layout):
+        text = [
+            "Длинна волны: {:.2f} нм".format(self.setup.lambda_light*1e6),
+            "Длинная кристалла: {:.1f} мм".format(self.setup.crystal_length),
+            "Растояние от кристала до экрана: {:d} см".format(int(self.setup.length/10)),
+            "Показатель преломления обыкновенной волны: {:.5f}".format(self.setup.n_ordinary)
+        ]
+        layout.addWidget(QLabel("\n".join(text)))
+
+    def initField(self, layout):
+        self.field =  ElectricField(9, EFState.DC)
+
+        self.field_checkbox = QCheckBox("Включить блок питания")
+        input = QDoubleSpinBox()
+        input.setRange(0, self.field.U)
+        input.setSingleStep(0.1)
+        self.field.U = 0
+
+        def set_field(state):
+            input.setEnabled(state)
+            if state:
+                self.image_calculator.field = self.field
+            else:
+                self.image_calculator.field = None
+            self.updateCanvas()
+
+        self.field_checkbox.stateChanged.connect(set_field)
+
+        def set_u(u:float):
+            self.field.U = u
+            self.updateCanvas()
+
+        input.valueChanged.connect(set_u)
+        gr_box = QGroupBox("Блок питания")
+        form = QFormLayout()
+        form.addRow(self.field_checkbox)
+        form.addRow("Установить напряжение, В: ", input)
+        gr_box.setLayout(form)
+        layout.addWidget(gr_box)
 
     def initDiod(self, layout):
         ch_box = QCheckBox("Установить диод")
 
         def set_diod(state):
+            self.field_checkbox.stateChanged.emit(True)
+            self.field_checkbox.setDisabled(state)
+            self.crys_box.setDisabled(state)
+            self.sca_box.setDisabled(state)
             if state:
+                # self.cha
                 self.image_calculator.diod = True
                 self.updateCanvas = self.updateCanvasOscilogramm
+                self.field.state = EFState.AC
             else:
                 self.image_calculator.diod = None
                 self.updateCanvas = self.updateCanvasView
+                self.field.state = EFState.DC
+            self.updateCanvas()
+        ch_box.stateChanged.connect(set_diod)
+        layout.addWidget(ch_box)
 
     def initCrystal(self, layout):
-        ch_box = QCheckBox("Установить кристал")
+        self.crys_box = QCheckBox("Установить кристал")
 
         def set_crystall(state):
             if state:
@@ -79,15 +138,15 @@ class Lab407Widget(QWidget):
                 self.image_calculator.crystal = None
             self.updateCanvas()
 
-        ch_box.stateChanged.connect(set_crystall)
-        layout.addWidget(ch_box)
+        self.crys_box.stateChanged.connect(set_crystall)
+        layout.addWidget(self.crys_box)
 
     def initScatter(self, layout: QLayout):
         cos_scatter = CosScatter()
         gauss_scatter = GaussScatter()
         self.image_calculator.scatter = gauss_scatter
-        ch_box = QCheckBox("Установить рассеивающую пластинку")
-
+        sca_box = QCheckBox("Установить рассеивающую пластинку")
+        self.sca_box = sca_box
         def change_state(state: bool):
             if state:
                 self.image_calculator.scatter = cos_scatter
@@ -95,8 +154,8 @@ class Lab407Widget(QWidget):
                 self.image_calculator.scatter = gauss_scatter
             self.updateCanvas()
 
-        ch_box.stateChanged.connect(change_state)
-        layout.addWidget(ch_box)
+        sca_box.stateChanged.connect(change_state)
+        layout.addWidget(sca_box)
 
     def initPolaroid(self, layout):
         polaroid = Polaroid(self.setup.polaroid_zero)
@@ -162,9 +221,16 @@ class Lab407Widget(QWidget):
     def updateCanvasOscilogramm(self):
         self.ax.clear()
         ampl = self.image_calculator.calculate()
-        img = self.ax.matshow(ampl, cmap="Greys_r", vmin=0, vmax=1)
+        field = self.field.value()
+        img = self.ax.scatter(field, 10*ampl, marker=".")
         # self.canvas.figure.colorbar(img)
-        self.ax.set_axis_off()
+        self.ax.grid(True)
+        self.ax.set_xlim(0,9, auto = True)
+        self.ax.set_ylim(0,10, auto = True)
+        self.ax.xaxis.set_minor_locator(MultipleLocator(5))
+        self.ax.yaxis.set_minor_locator(MultipleLocator(5))
+
+        # self.ax.set_axis_off()
         self.ax.figure.canvas.draw()
 
 
