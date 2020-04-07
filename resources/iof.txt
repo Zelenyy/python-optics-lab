@@ -1,0 +1,15 @@
+Water_Ice	1.31
+Acrylic_Glass	1.491
+Benzene	1.501	
+Crown_Glass	1.50
+Plate_Glass 1.52
+Sodium_Chloride	1.544
+Amber	1.55	
+Polycabonate	1.60	
+Flint_Glass	1.62
+Bromine	1.661	
+Sapphire	1.778
+Cubic_Zirconia	2.18
+Diamond	2.417	
+Silicon	3.48
+Germanium	4.05
