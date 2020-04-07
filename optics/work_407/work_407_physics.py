@@ -20,13 +20,14 @@ class PokkelsIC(ImageCalculator):
     def __init__(self, setup: Setup407):
         self.setup = setup
         self.init_grid()
-
+        self.full_size = 400 # mm
         self.k = 2 * np.pi / self.setup.lambda_light
 
         self.diff_phases_no_field = self.k * self.setup.crystal_length * (
                 self.setup.n_ordinary - self.setup.n_extra) * (self.theta ** 2)
 
     def init_grid(self):
+
         self.x = np.arange(0.5, 200, 0.5)
         self.X, self.Y = np.meshgrid(self.x, self.x)
         self.phi = np.arctan(self.X / self.Y)

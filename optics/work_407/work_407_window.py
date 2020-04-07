@@ -72,7 +72,8 @@ class Lab407Widget(QWidget):
             "Длинна волны: {:.2f} нм".format(self.setup.lambda_light*1e6),
             "Длинная кристалла: {:.1f} мм".format(self.setup.crystal_length),
             "Растояние от кристала до экрана: {:d} см".format(int(self.setup.length/10)),
-            "Показатель преломления обыкновенной волны: {:.5f}".format(self.setup.n_ordinary)
+            "Показатель преломления обыкновенной волны: {:.5f}".format(self.setup.n_ordinary),
+            "Полная длинна картины {}  мм".format(self.image_calculator.full_size)
         ]
         layout.addWidget(QLabel("\n".join(text)))
 
