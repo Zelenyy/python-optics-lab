@@ -5,9 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton
 from PyQt5 import QtWidgets
-from optics.work_405_window import Work405Window
 from optics.optics_item import Diaphragm
-from optics.work_407_window import Lab407Window
+from optics.work_407.work_407_window import Lab407Window
 
 
 @dataclass

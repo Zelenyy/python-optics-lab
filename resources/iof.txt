@@ -1,5 +1,5 @@
-Water Ice	1.31
-Acrylic Glass	1.491
+Water_Ice	1.31
+Acrylic_Glass	1.491
 Benzene	1.501	
 Crown_Glass	1.50
 Plate_Glass 1.52

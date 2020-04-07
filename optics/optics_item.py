@@ -1,7 +1,10 @@
+import abc
 import math
 import math as m
 
 import numpy as np
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QDialog, QTextBrowser, QHBoxLayout, QTableView
 
 
 class Lens:
@@ -43,12 +46,47 @@ class Diaphragm:
 
 
 def fresnel_coefficients_s_r(alpha, beta):
-    alpha = math.radians(alpha)
-    beta = math.radians(beta)
     return (math.sin(alpha - beta)**2)/(math.sin(alpha + beta)**2)
 
 
 def fresnel_coefficients_p_r(alpha, beta):
-    alpha = math.radians(alpha)
-    beta = math.radians(beta)
     return (math.tan(alpha - beta)**2)/(math.tan(alpha + beta)**2)
+
+
+def load_solid_iof():
+    path = "./resources/iof.txt"
+    data = {}
+    with open(path) as fin:
+        for line in fin.readlines():
+            line = line.split()
+            data[line[0]] = float(line[1])
+    return data
+
+
+class IOFTable(QDialog):
+    def __init__(self,data: dict):
+        super().__init__()
+        self.table = QTableView()
+        hbox = QHBoxLayout()
+        self.setLayout(hbox)
+        hbox.addWidget(self.table)
+        sti = QStandardItemModel(parent=self)
+        for key, value in data.items():
+            sti.appendRow([QStandardItem(key), QStandardItem(str(value))])
+        self.table.setModel(sti)
+        self.setWindowTitle("Таблица показателей преломления")
+
+
+class Scatter(abc.ABC):
+    @abc.abstractmethod
+    def distribution(self, phi, theta):
+        pass
+
+
+class Polaroid:
+    def __init__(self, zero=0):
+        self.position = 0
+        self.zero = zero
+
+    def angle(self):
+        return self.zero - self.position
