@@ -14,7 +14,7 @@ MATPLOTLIB_MIN_VERSION = '3.1.1'
 
 setuptools.setup(
     name="mipt-npm-optics",
-    version="0.0.1",
+    version="0.0.1.dev4",
     author="Mikhail Zelenyi",
     author_email="mihail.zelenyy@phystech.edu",
     url='http://npm.mipt.ru/',
@@ -23,7 +23,14 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords="optics",
-    packages=["optics"],
+    packages=setuptools.find_packages(),
+    entry_points = {
+      "console_scripts" : [
+          "mipt-optics = optics.main:main"
+      ]
+    },
+    package_data = { "optics" : ["data/*.txt"]},
+    include_package_data = True,
     classifiers=(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -35,10 +42,10 @@ setuptools.setup(
     #     "Source Code": "",
     # },
     install_requires=[
-        'numpy>={0}'.format(NUMPY_MIN_VERSION),
-        'scipy>={0}'.format(SCIPY_MIN_VERSION),
-        'matplotlib>={0}'.format(MATPLOTLIB_MIN_VERSION),
-        "pyqt5>={}".format(PYQT_MIN_VERSION),
+        'numpy',
+        'scipy',
+        'matplotlib',
+        "pyqt5",
         "appdirs"
         # 'tables>={0}'.format(PYTABLES_MIN_VERSION),
 

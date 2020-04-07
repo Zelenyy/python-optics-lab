@@ -2,16 +2,20 @@
 
 ## Установка
 
-### Windows
+Устнавливем [Anaconda](https://www.anaconda.com/) для Python3 
+или устанавливаем Python с [официального сайта](https://www.python.org/)
 
-Устнавливем [Anaconda](https://www.anaconda.com/) для Python3.
-В директории с файлом `setup.py` открываем терминал и вводи команду:
+Устанавливаем пакет с помощью `pip`, для этого в терминале введите:
 ```
-pip install -e .
+pip install mipt-npm-optics
 ```
-Затем запускаем программу:
+Теперь можно заускать программу:
 ```
-python3 main.py
+mipt-optics
+```
+или
+```
+mipt-optics.exe
 ```
 
 ### Ubuntu
@@ -21,14 +25,7 @@ python3 main.py
 ```
 sudo apt-get install python3-pip
 ```
-В директории с файлом `setup.py` открываем терминал и вводи команду:
-```
-pip3 install -e .
-```
-Затем запускаем программу:
-```
-python3 main.py
-```
+
 ### Установка зависимостей вручную
 ```
 conda install pyqt numpy scipy matplotlib appdirs

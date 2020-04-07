@@ -1,6 +1,7 @@
 import abc
 import math
 import math as m
+from pathlib import Path
 
 import numpy as np
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -54,7 +55,7 @@ def fresnel_coefficients_p_r(alpha, beta):
 
 
 def load_solid_iof():
-    path = "./resources/iof.txt"
+    path = Path(__file__).parent / "data/iof.txt"
     data = {}
     with open(path) as fin:
         for line in fin.readlines():
