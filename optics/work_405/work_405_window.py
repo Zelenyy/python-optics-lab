@@ -35,11 +35,12 @@ class SpinBoxDelegate(QStyledItemDelegate):
 
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem', index: QtCore.QModelIndex) -> QWidget:
-        editor = QSpinBox()
+        editor = QSpinBox(parent)
         editor.setFrame(False)
         editor.setRange(0, self.max_)
         editor.setSingleStep(1)
         return editor
+
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
         value = int(float(index.model().data(index, QtCore.Qt.EditRole)))
         editor.setValue(value)
