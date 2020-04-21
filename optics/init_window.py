@@ -42,7 +42,9 @@ class LabsWigget(QtWidgets.QWidget):
         for lab in labs:
             btn = QPushButton(lab.btn_name)
             # btn.clicked.connect(lab.launch)
-            btn.clicked.connect(lambda x: lab.launch(x))
+            def action(lab):
+                return lambda x: lab.launch(x)
+            btn.clicked.connect(action(lab))
             vbox.addWidget(btn)
         self.setLayout(vbox)
         vbox.addStretch()
