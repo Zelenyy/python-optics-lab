@@ -47,6 +47,7 @@ class Diaphragm(ItemElement):
         self.element = Element(0.0, mask)
 
     def update_width(self, width):
+        self.width = width
         self.mask.square(r0=(0 * um, 0 * um), size=(width, 10 * mm), angle=0 * degrees)
 
     def rotate(self, angle):
