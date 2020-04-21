@@ -5,14 +5,15 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QLabel, QFormLayout, QWidget, QHBoxLayout, QVBoxLayout, QSpinBox, QPushButton, \
-    QApplication, QListView, QGroupBox, QStyledItemDelegate, QTableView, QMainWindow
+    QApplication, QListView, QGroupBox, QStyledItemDelegate, QTableView, QMainWindow, QCheckBox
 
-from diffractio import mm, um
+from diffractio import mm, um, degrees, nm
 from diffractio.utils_optics import field_parameters
 
 from matplotlib.backends.qt_compat import is_pyqt5
 from matplotlib.figure import Figure
 
+from optics.load_setup import load_setup
 from optics.work_405.element_items import Grating, Diaphragm, Lens, DiffractioCalculator
 from optics.work_405.setup_405 import Setup405
 
@@ -69,6 +70,24 @@ class Work405Window(QWidget):
         widthInput.valueChanged.connect(widthChanged)
         form.addRow("Ширина щели, мкм: ", widthInput)
 
+        self.rot45 = QCheckBox("Повернуть щель на 45 градусов")
+        self.rot45.setEnabled(False)
+
+        def action(flag):
+            if flag:
+                self.dia.rotate(45*degrees)
+            else:
+                self.dia.rotate(0)
+        self.rot45.stateChanged.connect(action)
+        form.addRow(self.rot45)
+
+
+    def initSetup(self, layout):
+        text = [
+            "Длинна волны: {:.2f} нм".format(self.setup.lambda_light/nm),
+            "Растояние от источника до экрана: {:d} см".format(int(self.setup.length/mm/10)),
+        ]
+        layout.addWidget(QLabel("\n".join(text)))
 
     def init_description(self, form):
         btn = QPushButton(
@@ -116,8 +135,10 @@ class Work405Window(QWidget):
         self.hbox = QHBoxLayout()
         self.vbox = QVBoxLayout()
         self.setLayout(self.hbox)
-        self.setup = Setup405()
-        # self.setup = load_setup(Setup405)
+        # self.setup = Setup405()
+        self.setup = load_setup(Setup405)
+        print(self.setup)
+        self.initSetup(self.vbox)
         self.image_calculator = DiffractioCalculator(self.setup, self.setup.source())
         self.init_mpl_widget(self.hbox)
         self.hbox.addLayout(self.vbox)
@@ -134,13 +155,13 @@ class Work405Window(QWidget):
         store_list.appendRow([item1, QStandardItem(str(item2))])
 
         focal = self.setup.focal1
-        lens = Lens("Линза 1 (F = {} см)".format(focal / mm / 10), self.setup.mask(), focal)
+        lens = Lens("Линза 1 (F = {:.2f} см)".format(focal / mm / 10), self.setup.mask(), focal)
         item1 = lens.item
         item2 = lens.element.position/mm
         store_list.appendRow([item1, QStandardItem(str(item2))])
 
         focal = self.setup.focal2
-        lens = Lens("Линза 2 (F = {} см)".format(focal / mm / 10), self.setup.mask(), focal)
+        lens = Lens("Линза 2 (F = {:.2f} см)".format(focal / mm / 10), self.setup.mask(), focal)
         item1 = lens.item
         item2 = lens.element.position/mm
         store_list.appendRow([item1, QStandardItem(str(item2))])
@@ -210,6 +231,7 @@ class Work405Window(QWidget):
             self.image_calculator.elements.append(data.element)
             if data is self.dia:
                 self.widthInput.setEnabled(True)
+                self.rot45.setEnabled(True)
             # self.update_image()
 
         self.store.doubleClicked.connect(action_store)
@@ -223,7 +245,7 @@ class Work405Window(QWidget):
                 # self.update_image()
                 if data is self.dia:
                     self.widthInput.setEnabled(False)
-
+                    self.rot45.setEnabled(False)
 
 
         self.bench.doubleClicked.connect(action_bench)

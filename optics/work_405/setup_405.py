@@ -10,18 +10,29 @@ from optics.load_setup import Setup
 
 @dataclass
 class Setup405(Setup):
-    length = 2000 * mm  # mm
+    length : float = 2000 * mm  # mm
     lambda_light: float = 632 * nm  # micrometer
 
-    focal1 = 100 * mm
-    focal2 = 25 * mm
-    grids = [(100 * um, 0.6),
+    focal1 : float = 100 * mm
+    focal2 : float = 25 * mm
+    grids : list = ((100 * um, 0.6),
              (70 * um, 0.5),
              (50 * um, 0.4),
-             (20 * um, 0.3)]
+             (20 * um, 0.3))
 
-    def generate(self):
-        return Setup405()
+    @classmethod
+    def generate(cls):
+
+        setup = cls()
+        setup.lambda_light = (np.random.random_sample()*300 + 400) * nm
+        setup.length = (np.random.random_sample()*50 +  1750) * mm
+
+        setup.focal1 =  (np.random.random_sample()*40 +  80) * mm
+        setup.focal2 =  (np.random.random_sample()*10 +  20) * mm
+
+        setup.grids = [(np.random.random_sample()*10 + 20*i, np.random.random_sample()) for i in range(6) ]
+
+        return setup
 
     def source(self):
         length = 10 * mm
