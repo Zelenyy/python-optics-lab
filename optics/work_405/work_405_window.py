@@ -7,7 +7,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QLabel, QFormLayout, QWidget, QHBoxLayout, QVBoxLayout, QSpinBox, QPushButton, \
     QApplication, QListView, QGroupBox, QStyledItemDelegate, QTableView, QMainWindow
 
-from diffractio import mm
+from diffractio import mm, um
 from diffractio.utils_optics import field_parameters
 
 from matplotlib.backends.qt_compat import is_pyqt5
@@ -54,63 +54,21 @@ class SpinBoxDelegate(QStyledItemDelegate):
 
 class Work405Window(QWidget):
 
-    def init_diaphragm(self, form):
-        pass
-        # diaphragm = Diaphragm()
-        # dia_btn = QCheckBox()
-        # widthInput = QSpinBox()
-        # widthInput.setRange(10, 1000)
-        # widthInput.setSingleStep(10)
-        # widthInput.setValue(diaphragm.width)
-        # widthInput.setDisabled(True)
-        #
-        # def widthChanged(width: int):
-        #     diaphragm.width = width
-        #     self.updateImage()
-        #
-        # widthInput.valueChanged.connect(widthChanged)
-        #
-        # def setup_dia(state: bool):
-        #     widthInput.setEnabled(state)
-        #     if state:
-        #         self.image_calculator.diaphragm = diaphragm
-        #     else:
-        #         self.image_calculator.diaphragm = None
-        #     self.updateImage()
-        #
-        # dia_btn.stateChanged.connect(setup_dia)
-        #
-        # form.addRow("Поставить щель", dia_btn)
-        # form.addRow("Ширина щели: ", widthInput)
+    def diaphragm_widget(self, form):
 
-    def init_lens(self, form):
-        pass
-        # lens = Lens(100)
-        # lens_btn = QCheckBox()
-        # posInput = QSpinBox()
-        # posInput.setRange(10, int(self.setup.length/10))
-        # posInput.setSingleStep(1)
-        # posInput.setValue(0)
-        # posInput.setDisabled(True)
-        #
-        # def posChanged(position: int):
-        #     lens.position = position*10
-        #     self.updateImage()
-        #
-        # posInput.valueChanged.connect(posChanged)
-        #
-        # def setup_lens(state: bool):
-        #     posInput.setEnabled(state)
-        #     if state:
-        #         self.image_calculator.lens1 = lens
-        #     else:
-        #         self.image_calculator.lens1 = None
-        #     self.updateImage()
-        #
-        # lens_btn.stateChanged.connect(setup_lens)
-        #
-        # form.addRow("Поставить линзу", lens_btn)
-        # form.addRow("Положение линзы, см", posInput)
+        widthInput = QSpinBox()
+        self.widthInput = widthInput
+        widthInput.setRange(10, 1000)
+        widthInput.setSingleStep(10)
+        widthInput.setValue(self.dia.width)
+        widthInput.setDisabled(True)
+
+        def widthChanged(width: int):
+            self.dia.update_width(width*um)
+            # self.updateImage()
+        widthInput.valueChanged.connect(widthChanged)
+        form.addRow("Ширина щели, мкм: ", widthInput)
+
 
     def init_description(self, form):
         btn = QPushButton(
@@ -150,7 +108,7 @@ class Work405Window(QWidget):
         self.vbox.addLayout(form)
 
         # self.init_description(form)
-        # self.init_diaphragm(form)
+        self.diaphragm_widget(form)
         # self.init_lens(form)
 
     def __init__(self, parent=None):
@@ -164,15 +122,15 @@ class Work405Window(QWidget):
         self.init_mpl_widget(self.hbox)
         self.hbox.addLayout(self.vbox)
         self.elements_store(self.vbox)
-        # self.init_controls()
+        self.init_controls()
         self.calc_button(self.vbox)
-        self.update_image()
+        # self.update_image()
 
 
     def fill_store(self, store_list):
-        dia = Diaphragm("Щель", self.setup.mask())
-        item1 = dia.item
-        item2 = dia.element.position/mm
+        self.dia = Diaphragm("Щель", self.setup.mask())
+        item1 = self.dia.item
+        item2 = self.dia.element.position/mm
         store_list.appendRow([item1, QStandardItem(str(item2))])
 
         focal = self.setup.focal1
@@ -193,8 +151,9 @@ class Work405Window(QWidget):
                         self.setup.mask(),
                         period, fill)
             item1 = g.item
-            item2 = g.element.position/mm
-            store_list.appendRow([item1, QStandardItem(str(item2))])
+            item2 = QStandardItem(str(g.element.position/mm))
+            item2.setEditable(True)
+            store_list.appendRow([item1, item2])
 
     def calc_button(self, layout):
         btn = QPushButton("Рассчитать изображение")
@@ -236,6 +195,7 @@ class Work405Window(QWidget):
 
         self.bench.setItemDelegateForColumn(1, SpinBoxDelegate(self.setup.length, self.store_list))
         self.bench.setColumnWidth(0,150)
+        self.bench.setColumnWidth(1,150)
         vbox.addWidget(self.bench)
         gr_box.setLayout(vbox)
         layout.addWidget(gr_box)
@@ -246,19 +206,25 @@ class Work405Window(QWidget):
             # item = self.store_list[indx]
             self.store.setRowHidden(indx.row(), True)
             self.bench.setRowHidden(indx.row(), False)
-            data = self.store_list.item(indx.row(), indx.column()).data( role=50)
+            data = self.store_list.item(indx.row(), 0).data(role=50)
             self.image_calculator.elements.append(data.element)
+            if data is self.dia:
+                self.widthInput.setEnabled(True)
             # self.update_image()
 
         self.store.doubleClicked.connect(action_store)
 
         def action_bench(indx: QModelIndex):
-            # item = self.store_list[indx]
-            self.store.setRowHidden(indx.row(), False)
-            self.bench.setRowHidden(indx.row(), True)
-            data = self.store_list.item(indx.row(), indx.column()).data( role=50)
-            self.image_calculator.elements.remove(data.element)
-            # self.update_image()
+            if indx.column() == 0:
+                self.store.setRowHidden(indx.row(), False)
+                self.bench.setRowHidden(indx.row(), True)
+                data = self.store_list.item(indx.row(), 0).data(role=50)
+                self.image_calculator.elements.remove(data.element)
+                # self.update_image()
+                if data is self.dia:
+                    self.widthInput.setEnabled(False)
+
+
 
         self.bench.doubleClicked.connect(action_bench)
 

@@ -42,8 +42,12 @@ class Diaphragm(ItemElement):
     def __init__(self, name, mask, width=300 * um):
         super().__init__(name)
         self.width = width
-        mask.square(r0=(0 * um, 0 * um), size=(width, 10 * mm), angle=0 * degrees)
+        self.mask = mask
+        self.update_width(width)
         self.element = Element(0.0, mask)
+
+    def update_width(self, width):
+        self.mask.square(r0=(0 * um, 0 * um), size=(width, 10 * mm), angle=0 * degrees)
 
 
 class Lens(ItemElement):
