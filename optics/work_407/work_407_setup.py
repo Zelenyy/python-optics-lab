@@ -14,8 +14,8 @@ class Setup407:
     n_ordinary = 1.5
     n_extra = 1.3
     laser_angle = 0  # degree
-    polaroid_zero = 0
-    half_lambda_voltage = 1.5
+    polaroid_zero = 0 # degree
+    half_lambda_voltage = 1.5 # volt
 
     @classmethod
     def generate(cls):

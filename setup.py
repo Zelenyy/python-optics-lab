@@ -46,7 +46,12 @@ setuptools.setup(
         'scipy',
         'matplotlib',
         "pyqt5",
-        "appdirs"
+        "appdirs",
+        # diffractio
+        "diffractio",
+        "hickle",
+        "pandas",
+        "pillow"
         # 'tables>={0}'.format(PYTABLES_MIN_VERSION),
 
     ]

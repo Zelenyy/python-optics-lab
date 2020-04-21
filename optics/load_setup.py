@@ -2,9 +2,14 @@ import os
 import pickle
 
 import appdirs
+import abc
 
+class Setup(abc.ABC):
+    @abc.abstractmethod
+    def generate(self):
+        pass
 
-def load_setup(cls: object):
+def load_setup(cls: Setup):
     name = str(cls.__name__) + ".pyobj"
     appname = "labs"
     author = "npm"
