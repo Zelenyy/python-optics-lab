@@ -137,7 +137,7 @@ class Work405Window(QWidget):
         self.setLayout(self.hbox)
         # self.setup = Setup405()
         self.setup = load_setup(Setup405)
-        print(self.setup)
+        # print(self.setup)
         self.initSetup(self.vbox)
         self.image_calculator = DiffractioCalculator(self.setup, self.setup.source())
         self.init_mpl_widget(self.hbox)

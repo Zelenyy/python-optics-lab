@@ -30,7 +30,7 @@ class Setup405(Setup):
         setup.focal1 =  (np.random.random_sample()*40 +  80) * mm
         setup.focal2 =  (np.random.random_sample()*10 +  20) * mm
 
-        setup.grids = [(np.random.random_sample()*10 + 20*i, np.random.random_sample()) for i in range(6) ]
+        setup.grids = [( (np.random.random_sample()*10 + 20*i)* um, np.random.random_sample()) for i in range(6) ]
 
         return setup
 
