@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton
 from PyQt5 import QtWidgets
 from optics.optics_item import Diaphragm
+from optics.work_405.work_405_window import Work405Window, Lab405Window
 from optics.work_407.work_407_window import Lab407Window
 
 
@@ -30,7 +31,8 @@ class LabsWigget(QtWidgets.QWidget):
         label = QLabel("Выберите лабораторную работу")
 
         labs = [
-            Launcher("407: Эффект Поккельса", Lab407Window)
+            Launcher("407: Эффект Поккельса", Lab407Window),
+            Launcher("405: ПРЕОБРАЗОВАНИЕ ФУРЬЕ В ОПТИКЕ", Lab405Window)
         ]
 
         vbox.addWidget(label)

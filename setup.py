@@ -39,7 +39,12 @@ setuptools.setup(
         'scipy>={0}'.format(SCIPY_MIN_VERSION),
         'matplotlib>={0}'.format(MATPLOTLIB_MIN_VERSION),
         "pyqt>=".format(PYQT_MIN_VERSION),
-        "appdirs"
+        "appdirs",
+        # diffractio
+        "diffractio",
+        "hickle",
+        "pandas",
+        "pillow"
         # 'tables>={0}'.format(PYTABLES_MIN_VERSION),
 
     ]
