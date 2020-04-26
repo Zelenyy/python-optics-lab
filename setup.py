@@ -14,7 +14,7 @@ MATPLOTLIB_MIN_VERSION = '3.1.1'
 
 setuptools.setup(
     name="mipt-npm-optics",
-    version="0.0.2.dev1",
+    version="0.0.2.dev2",
     author="Mikhail Zelenyi",
     author_email="mihail.zelenyy@phystech.edu",
     url='http://npm.mipt.ru/',
