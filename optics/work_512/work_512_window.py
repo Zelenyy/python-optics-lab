@@ -3,7 +3,7 @@ import numpy as np
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QStandardItemModel
 from PyQt5.QtWidgets import QLabel, QFormLayout, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, \
-    QApplication, QListView, QGroupBox, QMainWindow
+    QApplication, QListView, QGroupBox, QMainWindow, QRadioButton
 
 from diffractio import mm, nm
 from diffractio.utils_optics import field_parameters
@@ -12,7 +12,7 @@ from matplotlib.backends.qt_compat import is_pyqt5
 from matplotlib.figure import Figure
 
 from optics.work_512.color import wav2RGB, create_cmap
-from optics.work_512.element_items import Diaphragm, Lens, DiffractioCalculator
+from optics.work_512.element_items import Diaphragm, Lens, DiffractioCalculator, ScreenPlane, Screen, Telescope
 from optics.work_512.item_widget import ItemWidget, add_dia_width
 from optics.work_512.setup_512 import Setup512
 
@@ -56,6 +56,58 @@ class Work512Window(QWidget):
         self.color2 =create_cmap(wav2RGB(self.setup.lambda_light_2 / nm))
         return 0
 
+    def screen_button(self, layout, form):
+        group = QGroupBox("Выбрать способ наблюдения")
+        layout.addWidget(group)
+        vbox = QVBoxLayout()
+        group.setLayout(vbox)
+        qb1 = QRadioButton("Экран")
+        qb2 = QRadioButton("Зрительная труба")
+        qb3 = QRadioButton("Микроскоп")
+        vbox.addWidget(qb1)
+        vbox.addWidget(qb2)
+        vbox.addWidget(qb3)
+
+        simple_screen = Screen("Экран",ScreenPlane(200*mm))
+        ItemWidget(form, simple_screen, x=False)
+        telescope = Screen("Зрительная труба", Telescope(1000*mm, self.setup))
+        # ItemWidget(form, telescope, x=False)
+        # ItemWidget(form, simple_screen, x=False)
+
+        def action_1(state):
+            if qb1.isChecked():
+                self.image_calculator.screen1 = simple_screen
+                self.image_calculator.screen2 = simple_screen
+                telescope.change_state(False)
+                simple_screen.change_state(True)
+                qb2.setChecked(False)
+                qb3.setChecked(False)
+
+        def action_2(state):
+            if qb2.isChecked():
+                self.image_calculator.screen1 = telescope
+                self.image_calculator.screen2 = telescope
+                telescope.change_state(True)
+                simple_screen.change_state(False)
+                qb1.setChecked(False)
+                qb3.setChecked(False)
+
+        def action_3(state):
+            if qb3.isChecked():
+                self.image_calculator.screen1 = simple_screen
+                self.image_calculator.screen2 = simple_screen
+                simple_screen.change_state(True)
+                qb2.setChecked(False)
+                qb1.setChecked(False)
+
+        qb1.toggled.connect(action_1)
+        qb2.toggled.connect(action_2)
+        qb3.toggled.connect(action_3)
+        qb1.setChecked(True)
+
+
+
+
     def fill_store(self, store_list, form):
         dia = Diaphragm("Щель 1", self.setup.mask())
         item1 = dia.item
@@ -75,11 +127,11 @@ class Work512Window(QWidget):
         store_list.appendRow(item1)
         widget = ItemWidget(form, lens)
 
-        # focal = self.setup.focal2
-        # lens = Lens("Линза 2 (F = {:.2f} см)".format(focal / mm / 10), self.setup.mask(), focal)
-        # item1 = lens.item
-        # item2 = lens.element.position/mm
-        # store_list.appendRow([item1, QStandardItem(str(item2))])
+        focal = self.setup.focal2
+        lens = Lens("Линза 2 (F = {:.2f} см)".format(focal / mm / 10), self.setup.mask(), focal)
+        item1 = lens.item
+        store_list.appendRow(item1)
+        widget = ItemWidget(form, lens)
 
         # for indx, grating in enumerate(self.setup.grids):
         #     period, fill = grating
@@ -120,6 +172,7 @@ class Work512Window(QWidget):
 
         self.store_list = QStandardItemModel(parent=self)
         self.fill_store(self.store_list, form)
+        self.screen_button(gr_vbox, form)
 
         vbox = QVBoxLayout()
         self.store = QListView()

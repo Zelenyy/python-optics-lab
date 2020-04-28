@@ -14,8 +14,8 @@ class Setup512(Setup):
     lambda_light_1: float = 632 * nm  # micrometer
     lambda_light_2: float = 532 * nm  # micrometer
 
-    focal1 : float = 100 * mm
-    focal2 : float = 25 * mm
+    focal1 : float = 50 * mm
+    focal2 : float = 100 * mm
     grids : list = ((100 * um, 0.6),
              (70 * um, 0.5),
              (50 * um, 0.4),
@@ -52,7 +52,7 @@ class Setup512(Setup):
                 theta=0 * degrees)
 
             mask = Scalar_mask_XY(x=x0, y=y0, wavelength=wavelength)
-            mask.square(r0=(shift, 0), size=(1*mm, 10*mm), angle=0)
+            mask.square(r0=(shift, 0), size=(0.45*mm, 10*mm), angle=0)
             return source*mask
 
         return get_source(self.lambda_light_1, -1000*um),  get_source(self.lambda_light_1, 1000*um)

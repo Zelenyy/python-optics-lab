@@ -1,39 +1,40 @@
 from PyQt5.QtWidgets import QGroupBox, QFormLayout, QSpinBox
-from diffractio import um
+from diffractio import um, mm
 
 from optics.work_512.element_items import ItemElement
 
 
 class ItemWidget(QGroupBox):
 
-    def __init__(self, layout, item: ItemElement):
+    def __init__(self, layout, item: ItemElement, x = True):
         super().__init__(item.name)
         layout.addWidget(self)
         self.controls = []
         self.item = item
         self.form_inner = QFormLayout()
         self.setLayout(self.form_inner)
-        self.position_controls()
+        self.position_controls(x)
         item.add_listener(self)
         self.enable(False)
 
-    def position_controls(self):
-        x_input = QSpinBox()
-        x_input.setRange(-10, 10)
-        x_input.setSingleStep(1)
-        x_input.setValue(self.item.x)
+    def position_controls(self, x):
+        if x:
+            x_input = QSpinBox()
+            x_input.setRange(-10, 10)
+            x_input.setSingleStep(1)
+            x_input.setValue(self.item.x/mm)
 
-        def action(x):
-            self.item.update_x(x)
+            def action(x):
+                self.item.update_x(x)
 
-        x_input.valueChanged.connect(action)
-        self.form_inner.addRow("Положение по x, мм:", x_input)
-        self.controls.append(x_input)
+            x_input.valueChanged.connect(action)
+            self.form_inner.addRow("Положение по x, мм:", x_input)
+            self.controls.append(x_input)
 
         z_input = QSpinBox()
         z_input.setRange(0, 3000)
         z_input.setSingleStep(1)
-        z_input.setValue(self.item.x)
+        z_input.setValue(self.item.get_position()/mm)
 
         def action(x):
             self.item.update_z(x)
