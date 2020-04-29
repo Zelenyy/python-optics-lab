@@ -1,4 +1,6 @@
 import numpy as np
+from matplotlib.colors import ListedColormap
+
 
 def wav2RGB(wavelength):
     w = int(wavelength)
@@ -44,3 +46,12 @@ def wav2RGB(wavelength):
     SSS *= 255
 
     return [int(SSS*R), int(SSS*G), int(SSS*B)]
+
+def create_cmap(rgb):
+    N = 256
+    vals = np.ones((N, 4))
+    vals[:, 0] = np.linspace(0, rgb[0] / 256,  N)
+    vals[:, 1] = np.linspace(0, rgb[1] / 256,  N)
+    vals[:, 2] = np.linspace(0, rgb[2] / 256,  N)
+    newcmp = ListedColormap(vals)
+    return newcmp
